@@ -24,11 +24,21 @@ const Home = () => {
   const fetchArticles = async () => {
     setIsLoading(true);
 
-    const articleIds = await axios.get(`${BASE_URL}/newstories.json`);
+    const articleIds = await axios
+      .get(`${BASE_URL}/newstories.json`)
+      .catch((e) => {
+        console.log("Error getting article IDs: ", e);
+        return e;
+      });
     const articlePromises = articleIds.data
       .slice(0, 100)
       .map(async (articleId: number) => {
-        const article = await axios.get(`${BASE_URL}/item/${articleId}.json`);
+        const article = await axios
+          .get(`${BASE_URL}/item/${articleId}.json`)
+          .catch((e) => {
+            console.log("Error getting articles data: ", e);
+            return e;
+          });
         return article.data;
       });
     const articleList: Item[] = await Promise.all(articlePromises);

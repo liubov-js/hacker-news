@@ -1,6 +1,6 @@
 import React, { Fragment, useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 import moment from "moment";
 import { Button, Card, CardContent, CardHeader } from "@mui/material";
 import { TreeItem, TreeView } from "@mui/lab";
@@ -19,9 +19,12 @@ function ArticlePreview() {
 
   const fetchComments = async (commentsIds: number[], commentsSet: any) => {
     for (let i = 0; i < commentsIds.length; i++) {
-      const response = await axios.get(
-        `${BASE_URL}/item/${commentsIds[i]}.json`
-      );
+      const response = await axios
+        .get(`${BASE_URL}/item/${commentsIds[i]}.json`)
+        .catch((e) => {
+          console.log("Error getting comment: ", e);
+          return e;
+        });
       const comment = response.data;
       commentsSet.add(commentsIds[i]);
 
@@ -33,7 +36,12 @@ function ArticlePreview() {
 
   const fetchData = async () => {
     setIsLoading(true);
-    const response = await axios.get(`${BASE_URL}/item/${id}.json`);
+    const response = await axios
+      .get(`${BASE_URL}/item/${id}.json`)
+      .catch((e) => {
+        console.log("Error getting article: ", e);
+        return e;
+      });
     setArticle(response.data);
 
     const commentsIds = [...(article.kids || [])];
@@ -42,13 +50,23 @@ function ArticlePreview() {
     await fetchComments(commentsIds, commentsSet);
 
     const commentsArray = Array.from(commentsSet);
-    const commentsResponse = await axios.all(
-      commentsArray.map((commentId) => {
-        return axios.get(`${BASE_URL}/item/${commentId}.json`);
-      })
-    );
+    const commentsResponse = await axios
+      .all(
+        commentsArray.map((commentId) => {
+          return axios.get(`${BASE_URL}/item/${commentId}.json`).catch((e) => {
+            console.log("Error getting comment: ", e);
+            return e;
+          });
+        })
+      )
+      .catch((e) => {
+        console.log("Error getting comments: ", e);
+        return e;
+      });
 
-    const commentsData = commentsResponse.map((comment) => comment.data);
+    const commentsData = commentsResponse.map(
+      (comment: AxiosResponse) => comment.data
+    );
     setComments(commentsData);
     setIsLoading(false);
   };
