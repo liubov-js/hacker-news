@@ -26,7 +26,7 @@ const Home = () => {
 
     const articleIds = await axios.get(`${BASE_URL}/newstories.json`);
     const articlePromises = articleIds.data
-      .slice(0, 10)
+      .slice(0, 100)
       .map(async (articleId: number) => {
         const article = await axios.get(`${BASE_URL}/item/${articleId}.json`);
         return article.data;
